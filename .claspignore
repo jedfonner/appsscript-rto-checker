@@ -1,0 +1,5 @@
+# Include all .js and .html files in the gas folder
+**/*
+!**/*.js
+!**/*.html
+!appsscript.json

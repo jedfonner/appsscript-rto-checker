@@ -1,0 +1,34 @@
+{
+  "name": "appsscript-rto-tracker",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "gas:css": "echo '<style>' > 'gas/Stylesheet.html'; cat ./dist/assets/index*.css >> 'gas/Stylesheet.html'; echo '</style>' >> 'gas/Stylesheet.html'",
+    "gas:js": "echo '<script type=\"module\">' > ./gas/Javascript.html; cat ./dist/assets/index*.js >> ./gas/Javascript.html; echo '</script>' >> ./gas/Javascript.html",
+    "postbuild": "npm run gas:css && npm run gas:js",
+    "preview": "vite preview",
+    "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+    "clasp:login": "clasp login",
+    "clasp:logout": "clasp logout",
+    "clasp:create": "clasp create --type webapp --title \"Svelte Google Apps Script\" --rootDir .",
+    "clasp:push": "clasp push",
+    "preclasp:push": "npm run build",
+    "clasp:open": "clasp open",
+    "clasp:deploy": "clasp deploy",
+    "clasp:deployments": "clasp deployments",
+    "deploy": "npm run build && npm run clasp:push"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.1.0",
+    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@tsconfig/svelte": "^5.0.5",
+    "@types/node": "^24.6.0",
+    "svelte": "^5.39.6",
+    "svelte-check": "^4.3.2",
+    "typescript": "~5.9.3",
+    "vite": "^7.1.7"
+  }
+}
