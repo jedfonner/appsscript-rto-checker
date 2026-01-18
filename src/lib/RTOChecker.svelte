@@ -37,21 +37,20 @@
     '2026-11-27',
   ];
 
-  const ROLLOWING_WINDOW_DURATION_WEEKS = 13;
-  const RTO_EXPECTATION = 20; //per 13 weeks rolling time period (65 eligible in-office days)
-  const LOOK_INTO_THE_FUTURE_WEEKS = 4;
+  let window = $state(13); //weeks;
+  let requirement = $state(20); //per 13 weeks rolling time period (65 eligible in-office days)
 
   let endStr = $state(new Date().toISOString().slice(0, 10));
   $inspect('End', endStr);
 
   // 13 weeks ago
   let startStr = $state(
-    new Date(Date.now() - ROLLOWING_WINDOW_DURATION_WEEKS * 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10),
+    new Date(Date.now() - window * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   $inspect('Start', startStr);
+
   let inOfficeDays: Date[] = $state([]);
+
   interface AppState {
     state: 'idle' | 'loading' | 'error' | 'loaded';
     loadingError?: string;
@@ -60,6 +59,19 @@
     state: 'idle',
     loadingError: '',
   });
+
+  const reset = () => {
+    inOfficeDays = [];
+    appState.state = 'idle';
+    appState.loadingError = '';
+  };
+
+  const updateConfig = () => {
+    reset();
+    startStr = new Date(Date.now() - window * 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10);
+  };
 
   const formatDate = (dateStr: string): string => {
     const options: Intl.DateTimeFormatOptions = {
@@ -74,6 +86,7 @@
 
   const getServerData = async () => {
     try {
+      reset();
       //@ts-ignore
       if (!globalThis.inGAS) {
         console.warn('Not running in GAS environment. Loading local data.');
@@ -133,11 +146,40 @@
 </script>
 
 <main>
-  <aside></aside>
+  <aside>
+    <h3>Instructions</h3>
+    <p>
+      This app will pull your Google Calendar and specifically compute all the days where you
+      set your Working Location to be in the office.
+    </p>
+    <p>
+      It will not work if you do not use the Working Location feature in Google Calendar. See <a
+        href="https://support.google.com/calendar/answer/7638168?hl=en&co=GENIE.Platform%3DDesktop"
+        target="_blank">here</a
+      > for how to set up your Working Location in Google Calendar.
+    </p>
+    <p>
+      It will also not work if you are not diligent about updating your Working Location in
+      Google Calendar when you deviate from your normal in-office schedule.
+    </p>
+    <h3>Configuration</h3>
+
+    <div class="config-input">
+      <label for="window">Time Window (weeks) </label>
+      <input name="window" type="number" bind:value={window} min="1" />
+    </div>
+
+    <div class="config-input">
+      <label for="requirement">RTO Expectation</label>
+      <input name="requirement" type="number" bind:value={requirement} min="0" />
+    </div>
+
+    <button onclick={updateConfig}> Update </button>
+  </aside>
   <section>
     <div class="card">
-      <div>Start <input type="date" bind:value={startStr} /></div>
-      <div>End <input type="date" bind:value={endStr} /></div>
+      <div>Start <input type="date" bind:value={startStr} onchange={() => reset()} /></div>
+      <div>End <input type="date" bind:value={endStr} onchange={() => reset()} /></div>
       <div>
         <button onclick={getServerData}> Check RTO </button>
       </div>
@@ -149,7 +191,11 @@
         {:else if appState.state === 'error'}
           <div>Error loading data from server.</div>
         {:else if appState.state === 'loaded'}
-          <div class="rto-count">
+          <div
+            class="rto-count"
+            class:positive={inOfficeDays.length >= requirement}
+            class:negative={inOfficeDays.length < requirement}
+          >
             {inOfficeDays.length}
           </div>
           <div>
@@ -165,13 +211,13 @@
   <aside class="exclusions">
     <h3>Exclusions</h3>
     <p class="small">
-      In <span class="active">green</span> if included in the selected date range
+      In <span class="positive">green</span> if included in the selected date range
     </p>
     <ul>
       {#each EXCLUSIONS_US as dateStr}
         {@const isWithinRange =
           new Date(dateStr) >= new Date(startStr) && new Date(dateStr) <= new Date(endStr)}
-        <li class:active={isWithinRange}>{formatDate(dateStr)}</li>
+        <li class:positive={isWithinRange}>{formatDate(dateStr)}</li>
       {/each}
     </ul>
   </aside>
@@ -179,7 +225,7 @@
 
 <style>
   main {
-    height: 100%;
+    /* height: 100%; */
     display: grid;
     grid-template-columns: 400px 1fr 400px;
   }
@@ -193,7 +239,7 @@
     margin: 0 1rem;
     padding: 1rem;
   }
-  aside.exclusions {
+  aside {
     background-color: #ddd;
     border: 1px solid #333;
     border-radius: 0.5rem;
@@ -217,9 +263,19 @@
   .small {
     font-size: 0.8em;
   }
-  .active {
+  .positive {
     font-weight: bold;
     color: #007700;
+  }
+  .negative {
+    font-weight: bold;
+    color: #cc0000;
+  }
+  div.config-input {
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
   }
   button {
     border-radius: 8px;
@@ -247,8 +303,8 @@
     margin-top: 2rem;
   }
   p {
-    margin: 0;
-    font-size: 1.2em;
+    /* margin: 0; */
+    /* font-size: 1.2em; */
   }
   .rto-count {
     font-size: 10em;
