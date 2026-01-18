@@ -4,10 +4,17 @@
   import RTOChecker from './lib/RTOChecker.svelte';
 </script>
 
-<main>
+<div id="main">
   <h1>RTO Tracker</h1>
   <RTOChecker />
-</main>
+</div>
 
 <style>
+  #main {
+    height: 100%;
+    width: 100%;
+  }
+  h1 {
+    text-align: center;
+  }
 </style>

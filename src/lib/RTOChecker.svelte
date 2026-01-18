@@ -61,6 +61,17 @@
     loadingError: '',
   });
 
+  const formatDate = (dateStr: string): string => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long', // "Thursday"
+      year: 'numeric', // "2026"
+      month: 'long', // "January"
+      day: 'numeric', // "15"
+    };
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', options);
+  };
+
   const getServerData = async () => {
     try {
       //@ts-ignore
@@ -121,37 +132,133 @@
   };
 </script>
 
-<div class="card">
-  <div>Start <input type="date" bind:value={startStr} /></div>
-  <div>End <input type="date" bind:value={endStr} /></div>
-  <div>
-    <button onclick={getServerData}> Check RTO </button>
-  </div>
-</div>
-<div class="card">
-  {#if appState.state === 'loading'}
-    <div>Loading...</div>
-  {:else if appState.state === 'error'}
-    <div>Error loading data from server.</div>
-  {:else if appState.state === 'loaded'}
-    <div>In-Office Days: {inOfficeDays.length}</div>
-    <div>
-      RTO Status:
-      {#if inOfficeDays.length >= RTO_EXPECTATION}
-        <strong style="color: green;">Meets Expectation</strong>
-      {:else}
-        <strong style="color: red;">Below Expectation</strong>
-      {/if}
+<main>
+  <aside></aside>
+  <section>
+    <div class="card">
+      <div>Start <input type="date" bind:value={startStr} /></div>
+      <div>End <input type="date" bind:value={endStr} /></div>
+      <div>
+        <button onclick={getServerData}> Check RTO </button>
+      </div>
     </div>
-  {/if}
-</div>
+    <div class="card">
+      <div class="result">
+        {#if appState.state === 'loading'}
+          <div>Loading...</div>
+        {:else if appState.state === 'error'}
+          <div>Error loading data from server.</div>
+        {:else if appState.state === 'loaded'}
+          <div class="rto-count">
+            {inOfficeDays.length}
+          </div>
+          <div>
+            <p>Days in the office</p>
+            {#if new Date(endStr) >= new Date()}
+              <p class="small">(including planned future in-office days)</p>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    </div>
+  </section>
+  <aside class="exclusions">
+    <h3>Exclusions</h3>
+    <p class="small">
+      In <span class="active">green</span> if included in the selected date range
+    </p>
+    <ul>
+      {#each EXCLUSIONS_US as dateStr}
+        {@const isWithinRange =
+          new Date(dateStr) >= new Date(startStr) && new Date(dateStr) <= new Date(endStr)}
+        <li class:active={isWithinRange}>{formatDate(dateStr)}</li>
+      {/each}
+    </ul>
+  </aside>
+</main>
 
 <style>
+  main {
+    height: 100%;
+    display: grid;
+    grid-template-columns: 400px 1fr 400px;
+  }
+  section {
+    padding: 0 1rem;
+    /* border-right: 1px solid #333; */
+    height: 100%;
+    text-align: center;
+  }
+  aside {
+    margin: 0 1rem;
+    padding: 1rem;
+  }
+  aside.exclusions {
+    background-color: #ddd;
+    border: 1px solid #333;
+    border-radius: 0.5rem;
+  }
   .card {
     display: flex;
     flex-direction: row;
     gap: 1em;
     align-items: center;
     justify-content: center;
+  }
+  h3 {
+    margin-top: 0;
+  }
+  ul {
+    padding-left: 1.5rem;
+  }
+  li {
+    white-space: nowrap;
+  }
+  .small {
+    font-size: 0.8em;
+  }
+  .active {
+    font-weight: bold;
+    color: #007700;
+  }
+  button {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    font-weight: 500;
+    font-family: inherit;
+    background-color: #414141ff;
+    cursor: pointer;
+    transition: border-color 0.25s;
+  }
+  button:hover {
+    border-color: #646cff;
+    transform: scale(1.02);
+  }
+  button:active {
+    transform: scale(0.97);
+  }
+  button:focus,
+  button:focus-visible {
+    outline: 4px auto -webkit-focus-ring-color;
+  }
+  .result {
+    margin-top: 2rem;
+  }
+  p {
+    margin: 0;
+    font-size: 1.2em;
+  }
+  .rto-count {
+    font-size: 10em;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  @media (prefers-color-scheme: light) {
+    button {
+      background-color: #c6c6c6ff;
+    }
   }
 </style>
