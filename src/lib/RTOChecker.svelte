@@ -1,42 +1,4 @@
 <script lang="ts">
-  const EXCLUSIONS_US = [
-    '2025-09-01',
-    '2025-10-13',
-    '2025-11-11',
-    '2025-11-24',
-    '2025-11-25',
-    '2025-11-26',
-    '2025-11-27',
-    '2025-11-28',
-    '2025-12-22',
-    '2025-12-23',
-    '2025-12-24',
-    '2025-12-25',
-    '2025-12-26',
-    '2025-12-29',
-    '2025-12-30',
-    '2025-12-31',
-    '2026-01-01',
-    '2026-01-02',
-    '2026-01-19',
-    '2026-02-16',
-    '2026-05-25',
-    '2026-06-19',
-    '2026-06-29',
-    '2026-06-30',
-    '2026-07-01',
-    '2026-07-02',
-    '2026-07-03',
-    '2026-09-07',
-    '2026-10-12',
-    '2026-11-11',
-    '2026-11-23',
-    '2026-11-24',
-    '2026-11-25',
-    '2026-11-26',
-    '2026-11-27',
-  ];
-
   let window = $state(13); //weeks;
   let requirement = $state(20); //per 13 weeks rolling time period (65 eligible in-office days)
 
@@ -45,25 +7,64 @@
 
   // 13 weeks ago
   let startStr = $state(
+    // svelte-ignore state_referenced_locally
     new Date(Date.now() - window * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
   $inspect('Start', startStr);
 
-  let inOfficeDays: Date[] = $state([]);
+  let inOfficeDays: string[] = $state([]);
 
   interface AppState {
     state: 'idle' | 'loading' | 'error' | 'loaded';
     loadingError?: string;
   }
   let appState = $state({
-    state: 'idle',
-    loadingError: '',
+    rtoDataState: 'idle',
+    rtoLoadingError: '',
+    exclusionsDataState: 'idle',
+    exclusionsLoadingError: '',
   });
 
-  const reset = () => {
+  let exclusions: string[] = $state([]);
+  const getExclusionsFromServer = async (startStr: string, endStr: string) => {
+    console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
+    //@ts-ignore
+    if (!globalThis.inGAS) {
+      console.warn('Not running in GAS environment. Loading local exclusions data.');
+      exclusions = ['2025-11-27', '2025-12-25', '2026-01-01'];
+    } else {
+      appState.exclusionsDataState = 'loading';
+      await google.script.run
+        .withSuccessHandler((response: string[]) => {
+          // the response is void because testInvokationFromClient does not return anything
+          // update the type if your server function returns a value
+          console.log('Server response:', response);
+          if (response) {
+            appState.exclusionsDataState = 'loaded';
+            exclusions = response;
+          } else {
+            appState.exclusionsDataState = 'error';
+            appState.exclusionsLoadingError = 'No exclusions data received from server.';
+            console.warn('No exclusions data received from server.');
+          }
+        })
+        .withFailureHandler((error: GasError) => {
+          appState.exclusionsDataState = 'error';
+          appState.exclusionsLoadingError = `${error.message}`;
+          console.error('Error invoking getHolidaysAndExclusions on server:', error);
+        })
+        .getHolidaysAndExclusions('US', startStr, endStr);
+    }
+  };
+
+  $effect(() => {
+    getExclusionsFromServer(startStr, endStr);
+  });
+
+  const reset = async () => {
     inOfficeDays = [];
-    appState.state = 'idle';
-    appState.loadingError = '';
+    appState.rtoDataState = 'idle';
+    appState.rtoLoadingError = '';
   };
 
   const updateConfig = () => {
@@ -91,56 +92,61 @@
       if (!globalThis.inGAS) {
         console.warn('Not running in GAS environment. Loading local data.');
         inOfficeDays = [
-          new Date('2025-10-20'),
-          new Date('2025-10-21'),
-          new Date('2025-10-23'),
-          new Date('2025-10-27'),
-          new Date('2025-10-28'),
-          new Date('2025-10-30'),
-          new Date('2025-11-03'),
-          new Date('2025-11-04'),
-          new Date('2025-11-06'),
-          new Date('2025-11-12'),
-          new Date('2025-11-13'),
-          new Date('2025-11-18'),
-          new Date('2025-11-22'),
-          new Date('2025-11-23'),
-          new Date('2025-12-01'),
-          new Date('2025-12-02'),
-          new Date('2025-12-04'),
-          new Date('2025-12-08'),
-          new Date('2025-12-09'),
-          new Date('2025-12-11'),
-          new Date('2025-12-16'),
-          new Date('2026-01-06'),
-          new Date('2026-01-08'),
-          new Date('2026-01-12'),
-          new Date('2026-01-13'),
-          new Date('2026-01-18'),
+          '2025-10-20',
+          '2025-10-21',
+          '2025-10-23',
+          '2025-10-27',
+          '2025-10-28',
+          '2025-10-30',
+          '2025-11-03',
+          '2025-11-04',
+          '2025-11-06',
+          '2025-11-12',
+          '2025-11-13',
+          '2025-11-18',
+          '2025-11-22',
+          '2025-11-23',
+          '2025-12-01',
+          '2025-12-02',
+          '2025-12-04',
+          '2025-12-08',
+          '2025-12-09',
+          '2025-12-11',
+          '2025-12-16',
+          '2026-01-06',
+          '2026-01-08',
+          '2026-01-12',
+          '2026-01-13',
+          '2026-01-18',
         ];
-        appState.state = 'loaded';
+        appState.rtoDataState = 'loaded';
       } else {
         console.log('Running in GAS environment. Invoking server function.');
-        appState.state = 'loading';
+        appState.rtoDataState = 'loading';
         const result = await google.script.run
-          .withSuccessHandler((response: { inOfficeDays: Date[] }) => {
+          .withSuccessHandler((response: { inOfficeDays: string[] }) => {
             // the response is void because testInvokationFromClient does not return anything
             // update the type if your server function returns a value
             console.log('Server response:', response);
-            appState.state = 'loaded';
-            inOfficeDays = response.inOfficeDays;
+            if (response) {
+              appState.rtoDataState = 'loaded';
+              inOfficeDays = response.inOfficeDays;
+            } else {
+              appState.rtoDataState = 'error';
+              appState.rtoLoadingError = 'No data received from server.';
+            }
           })
           .withFailureHandler((error: GasError) => {
             console.error('Error invoking server function:', error);
-            appState.state = 'error';
-            appState.loadingError = `${error.message}`;
+            appState.rtoDataState = 'error';
+            appState.rtoLoadingError = `${error.message}`;
           })
           .checkRTO(startStr, endStr);
       }
     } catch (error) {
       console.error('Unexpected error:', error);
-      appState.state = 'error';
-      appState.loadingError = `${error}`;
+      appState.rtoDataState = 'error';
+      appState.rtoLoadingError = `${error}`;
     }
   };
 </script>
@@ -186,11 +192,12 @@
     </div>
     <div class="card">
       <div class="result">
-        {#if appState.state === 'loading'}
+        {#if appState.rtoDataState === 'loading'}
           <div>Loading...</div>
-        {:else if appState.state === 'error'}
+        {:else if appState.rtoDataState === 'error'}
           <div>Error loading data from server.</div>
-        {:else if appState.state === 'loaded'}
+          <div>{appState.rtoLoadingError}</div>
+        {:else if appState.rtoDataState === 'loaded'}
           <div
             class="rto-count"
             class:positive={inOfficeDays.length >= requirement}
@@ -209,17 +216,19 @@
     </div>
   </section>
   <aside class="exclusions">
-    <h3>Exclusions</h3>
-    <p class="small">
-      In <span class="positive">green</span> if included in the selected date range
-    </p>
-    <ul>
-      {#each EXCLUSIONS_US as dateStr}
-        {@const isWithinRange =
-          new Date(dateStr) >= new Date(startStr) && new Date(dateStr) <= new Date(endStr)}
-        <li class:positive={isWithinRange}>{formatDate(dateStr)}</li>
-      {/each}
-    </ul>
+    <h3>Holidays & Exclusions</h3>
+    {#if appState.exclusionsDataState === 'loading'}
+      <div>Loading...</div>
+    {:else if appState.exclusionsDataState === 'error'}
+      <div>Error loading data from server.</div>
+      <div>{appState.exclusionsLoadingError}</div>
+    {:else if appState.exclusionsDataState === 'loaded'}
+      <ul>
+        {#each exclusions as dateStr}
+          <li>{formatDate(dateStr)}</li>
+        {/each}
+      </ul>
+    {/if}
   </aside>
 </main>
 
@@ -241,6 +250,7 @@
   }
   aside {
     background-color: #ddd;
+    color: #333;
     border: 1px solid #333;
     border-radius: 0.5rem;
   }
