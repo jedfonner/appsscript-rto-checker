@@ -1,6 +1,18 @@
 <script lang="ts">
-  let window = $state(13); //weeks;
-  let requirement = $state(20); //per 13 weeks rolling time period (65 eligible in-office days)
+  interface AppState {
+    state: 'idle' | 'loading' | 'error' | 'loaded';
+    loadingError?: string;
+  }
+  let appState = $state({
+    rtoDataState: 'idle',
+    rtoLoadingError: '',
+    exclusionsDataState: 'idle',
+    exclusionsLoadingError: '',
+  });
+  let requirement = $state(20); // days
+  let window = $state(13); // weeks;
+  let exclusions: string[] = $state([]);
+  let inOfficeDays: string[] = $state([]);
 
   let endStr = $state(new Date().toISOString().slice(0, 10));
   $inspect('End', endStr);
@@ -12,25 +24,45 @@
   );
   $inspect('Start', startStr);
 
-  let inOfficeDays: string[] = $state([]);
+  const getWorkDaysBetween = (
+    startStr: string,
+    endStr: string,
+    exclusions: string[],
+  ): number => {
+    // Calculates the number of workdays (Mon-Fri) between two dates, excluding specified dates
+    const startDate = new Date(startStr);
+    const endDate = new Date(endStr);
+    let workDaysCount = 0;
+    let currentDate = new Date(startDate);
 
-  interface AppState {
-    state: 'idle' | 'loading' | 'error' | 'loaded';
-    loadingError?: string;
-  }
-  let appState = $state({
-    rtoDataState: 'idle',
-    rtoLoadingError: '',
-    exclusionsDataState: 'idle',
-    exclusionsLoadingError: '',
-  });
+    while (currentDate <= endDate) {
+      const dayOfWeek = currentDate.getDay();
+      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+        const dateStr = currentDate.toISOString().slice(0, 10);
+        if (!exclusions.includes(dateStr)) {
+          workDaysCount++;
+        }
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
+    return workDaysCount;
+  };
 
-  let exclusions: string[] = $state([]);
+  let duration: number = $derived(getWorkDaysBetween(startStr, endStr, exclusions));
+
+  $inspect('Duration', duration);
+  let requiredFractionPerDay: number = $derived.by(() => requirement / window / 5);
+  $inspect('Required Fraction Per Day', requiredFractionPerDay);
+  let minimumDaysInOffice = $derived(Math.ceil(requiredFractionPerDay * duration));
+  $inspect('Minimum Days In Office', minimumDaysInOffice);
+
   const getExclusionsFromServer = async (startStr: string, endStr: string) => {
+    appState.exclusionsDataState = 'loading';
     console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
     //@ts-ignore
     if (!globalThis.inGAS) {
       console.warn('Not running in GAS environment. Loading local exclusions data.');
+      appState.exclusionsDataState = 'loaded';
       exclusions = ['2025-11-27', '2025-12-25', '2026-01-01'];
     } else {
       appState.exclusionsDataState = 'loading';
@@ -80,6 +112,7 @@
       year: 'numeric', // "2026"
       month: 'long', // "January"
       day: 'numeric', // "15"
+      timeZone: 'UTC',
     };
     const date = new Date(dateStr);
     return date.toLocaleDateString('en-US', options);
@@ -168,24 +201,24 @@
       It will also not work if you are not diligent about updating your Working Location in
       Google Calendar when you deviate from your normal in-office schedule.
     </p>
-    <h3>Configuration</h3>
+    <h3>RTO Expectation</h3>
 
     <div class="config-input">
-      <label for="window">Time Window (weeks) </label>
-      <input name="window" type="number" bind:value={window} min="1" />
+      <label for="requirement">Minimum Days in Office</label>
+      <input name="requirement" type="number" bind:value={requirement} min="0" />
     </div>
 
     <div class="config-input">
-      <label for="requirement">RTO Expectation</label>
-      <input name="requirement" type="number" bind:value={requirement} min="0" />
+      <label for="window">Per # of Weeks </label>
+      <input name="window" type="number" bind:value={window} min="1" />
     </div>
 
     <button onclick={updateConfig}> Update </button>
   </aside>
   <section>
     <div class="card">
-      <div>Start <input type="date" bind:value={startStr} onchange={() => reset()} /></div>
-      <div>End <input type="date" bind:value={endStr} onchange={() => reset()} /></div>
+      <div>From <input type="date" bind:value={startStr} onchange={() => reset()} /></div>
+      <div>To <input type="date" bind:value={endStr} onchange={() => reset()} /></div>
       <div>
         <button onclick={getServerData}> Check RTO </button>
       </div>
@@ -198,6 +231,15 @@
           <div>Error loading data from server.</div>
           <div>{appState.rtoLoadingError}</div>
         {:else if appState.rtoDataState === 'loaded'}
+          <div>Number of included work days:</div>
+          <div class="rto-count">
+            {duration}
+          </div>
+          <div>Required minimum in-office days:</div>
+          <div class="rto-count">
+            {minimumDaysInOffice}
+          </div>
+          <div>Your in-office days:</div>
           <div
             class="rto-count"
             class:positive={inOfficeDays.length >= requirement}
@@ -205,8 +247,8 @@
           >
             {inOfficeDays.length}
           </div>
+
           <div>
-            <p>Days in the office</p>
             {#if new Date(endStr) >= new Date()}
               <p class="small">(including planned future in-office days)</p>
             {/if}
@@ -311,15 +353,20 @@
   }
   .result {
     margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
   p {
     /* margin: 0; */
     /* font-size: 1.2em; */
   }
   .rto-count {
-    font-size: 10em;
     font-weight: 700;
-    line-height: 1;
+    font-size: 10rem;
+    line-height: 7rem;
+    margin-bottom: 2rem;
   }
 
   @media (prefers-color-scheme: light) {
