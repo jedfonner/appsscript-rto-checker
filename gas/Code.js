@@ -4,7 +4,8 @@ function doGet(e) {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
     .setTitle('RTO Tracker')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).setFaviconUrl()
+    .setFaviconUrl('https://cdn-icons-png.flaticon.com/512/17434/17434197.png');
 }
 
 function include(filename) {
