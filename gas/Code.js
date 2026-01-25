@@ -4,7 +4,7 @@ function doGet(e) {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
     .setTitle('RTO Tracker')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL).setFaviconUrl()
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .setFaviconUrl('https://cdn-icons-png.flaticon.com/512/17434/17434197.png');
 }
 
@@ -85,8 +85,8 @@ function checkRTO(startStr, endStr) {
   /* Making a repeated getXYZ() calls in the helper methods is slow. Faster to get all data once here. */
   const allEventData = allEvents.map(event => {
     const title = event.getTitle();
-    const start = event.getStartTime();
-    const end = event.getEndTime();
+    const startTime = event.getStartTime();
+    const endTime = event.getEndTime();
     const eventType = event.getEventType();
     const isAllDayEvent = event.isAllDayEvent();
     const isRecurringEvent = event.isRecurringEvent();
