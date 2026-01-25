@@ -4,7 +4,7 @@
   import Config from './Config.svelte';
   import Exclusions from './Exclusions.svelte';
   import Instructions from './Instructions.svelte';
-  import { formatDate } from './utils';
+  import { getWorkDaysBetween } from './utils';
 
   interface AppState {
     rtoDataState: 'idle' | 'loading' | 'error' | 'loaded';
@@ -25,61 +25,22 @@
 
   let requirement = $state(20); // days
   let measurementWindow = $state(13); // weeks;
-  let exclusions: string[] = $state([]);
-  let inOfficeDays: string[] = $state([]);
-
-  const getWorkDaysBetween = (
-    startStr: string,
-    endStr: string,
-    exclusions: string[],
-  ): number => {
-    // Calculates the number of workdays (Mon-Fri) between two dates, excluding specified dates
-    const startDate = new Date(startStr);
-    const endDate = new Date(endStr);
-    let workDaysCount = 0;
-    let currentDate = new Date(startDate);
-
-    while (currentDate <= endDate) {
-      const dayOfWeek = currentDate.getDay();
-      if (dayOfWeek >= 1 && dayOfWeek <= 5) {
-        const dateStr = currentDate.toISOString().slice(0, 10);
-        if (!exclusions || !exclusions.includes(dateStr)) {
-          workDaysCount++;
-        }
-      }
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return workDaysCount;
-  };
+  let exclusions: string[] = $state([]); // will be loaded from server
+  let inOfficeDays: string[] = $state([]); // will be loaded from server
 
   let duration: number = $derived(getWorkDaysBetween(startStr, endStr, exclusions));
-
-  $inspect('Duration', duration);
   let requiredFractionPerDay: number = $derived.by(() => requirement / measurementWindow / 5);
-  $inspect('Required Fraction Per Day', requiredFractionPerDay);
   let minimumDaysInOffice = $derived(Math.ceil(requiredFractionPerDay * duration));
-  $inspect('Minimum Days In Office', minimumDaysInOffice);
+  let metRequirement: boolean = $derived.by(() => {
+    return inOfficeDays.length >= minimumDaysInOffice;
+  });
 
-  const reset = async () => {
-    inOfficeDays = [];
-    appState.rtoDataState = 'idle';
-    appState.rtoLoadingError = '';
-  };
-
-  const updateConfig = () => {
-    reset();
-    startStr = new Date(Date.now() - measurementWindow * 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10);
-  };
   const getExclusionsFromServer = async (startStr: string, endStr: string) => {
     appState.exclusionsDataState = 'loading';
     console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
     appState.exclusionsDataState = 'loading';
     await window.google.script.run
       .withSuccessHandler((response: string[]) => {
-        // the response is void because testInvokationFromClient does not return anything
-        // update the type if your server function returns a value
         console.log('getExclusionsFromServer Server response:', response);
         if (response) {
           appState.exclusionsDataState = 'loaded';
@@ -103,8 +64,6 @@
       appState.rtoDataState = 'loading';
       const result = await window.google.script.run
         .withSuccessHandler((response: { inOfficeDays: string[] }) => {
-          // the response is void because testInvokationFromClient does not return anything
-          // update the type if your server function returns a value
           console.log('getRTODataFromServer Server response:', response);
           if (response) {
             appState.rtoDataState = 'loaded';
@@ -133,16 +92,15 @@
   $effect(() => {
     getAllData();
   });
-  let metRequirement: boolean = $derived.by(() => {
-    return inOfficeDays.length >= minimumDaysInOffice;
-  });
 </script>
 
 {#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
-  <div>Loading...</div>
+  <div class="loading">Loading...</div>
 {:else if appState.rtoDataState === 'error' || appState.exclusionsDataState === 'error'}
-  <div>Error loading data from server.</div>
-  <div>{appState.rtoLoadingError}</div>
+  <div class="error">
+    <div>Error loading data from server.</div>
+    <div>{appState.rtoLoadingError}</div>
+  </div>
 {:else if appState.rtoDataState === 'loaded' && appState.exclusionsDataState === 'loaded'}
   <main>
     <section>

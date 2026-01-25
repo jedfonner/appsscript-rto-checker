@@ -11,3 +11,9 @@
     <li>{formatDate(dateStr)}</li>
   {/each}
 </ul>
+
+<style>
+  ul {
+    margin: 0.5rem 0;
+  }
+</style>

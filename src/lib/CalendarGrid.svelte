@@ -15,7 +15,6 @@
       // exclude weekends
       const dt = new Date(year, month, day);
       if (dt.getUTCDay() === 0 || dt.getUTCDay() === 6) {
-        console.log('skipping weekend day', day, dt.toUTCString());
         continue;
       }
       dayList.push(day);
@@ -26,7 +25,6 @@
     const firstDayOfMonth = new Date(year, month, 1);
     return firstDayOfMonth.getDay(); // 0 (Sun) to 6 (Sat)
   });
-  $inspect('startsOn', startsOn);
 </script>
 
 <div class="calendar-grid">
@@ -44,6 +42,7 @@
       class:in-office={inOfficeDays.includes(dateStr)}
       class:out-of-office={!inOfficeDays.includes(dateStr)}
       class:excluded={exclusions.includes(dateStr)}
+      class:out-of-range={dateStr < startStr || dateStr > endStr}
     >
       {day}
     </div>
@@ -81,5 +80,8 @@
   .calendar-cell.excluded {
     background-color: var(--disabled-color);
     filter: brightness(0.8);
+  }
+  .calendar-cell.out-of-range {
+    opacity: 0.4;
   }
 </style>

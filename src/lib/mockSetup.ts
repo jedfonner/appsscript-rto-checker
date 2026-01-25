@@ -21,13 +21,15 @@ interface MockProxy {
 
 let mockServerDelay = 1000; // Default delay of 1 second
 
+type LoggerLevel = 'debug' | 'info' | 'warn' | 'error';
+let loggerLevel: LoggerLevel = 'info';
+
 const createMock = (state = { success: null as any, failure: null as any }) => {
   return new Proxy({}, {
     get: (target, prop: string) => {
-      // TRAP 1: withSuccessHandler
+      // Handle withSuccessHandler chaining
       if (prop === 'withSuccessHandler') {
         return (fn: any) => {
-          // CRITICAL FIX: Return a NEW proxy with updated state (don't mutate old state)
           return createMock({ ...state, success: fn });
         };
       }
@@ -35,14 +37,13 @@ const createMock = (state = { success: null as any, failure: null as any }) => {
       // TRAP 2: withFailureHandler
       if (prop === 'withFailureHandler') {
         return (fn: any) => {
-          // CRITICAL FIX: Return a NEW proxy with updated state
           return createMock({ ...state, failure: fn });
         };
       }
 
       // Invoke mock functions
       return (...args: any[]) => {
-        console.log(`[MOCK] Calling server function: ${prop}`, args);
+        if (loggerLevel === 'debug') console.log(`[MOCK] Calling server function: ${prop}`, args);
         const { success, failure } = state;
         // Simulate async behavior by using setTimeout to mimic 1s server delay
         setTimeout(() => {
@@ -52,6 +53,7 @@ const createMock = (state = { success: null as any, failure: null as any }) => {
           if (mocks[prop]) {
             result = mocks[prop](...args)
           } else {
+            console.error(`[MOCK] Function ${prop} not found on server.`);
             error = new Error(`Function ${prop} not found on server.`);
           }
 
@@ -68,8 +70,9 @@ const createMock = (state = { success: null as any, failure: null as any }) => {
   });
 };
 
-export const setupMock = (delay = 1000) => {
+export const setupMock = (delay = 1000, logLevel: LoggerLevel = 'info') => {
   mockServerDelay = delay;
+  loggerLevel = logLevel;
   window.google = {
     script: {
       run: createMock() as MockProxy

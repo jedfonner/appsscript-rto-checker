@@ -41,13 +41,11 @@ const EXCLUSIONS: Record<string, string[]> = {
 // Add your server functions here
 export const mocks: ServerFunctions = {
   getHolidaysAndExclusions: (country, startStr, endStr) => {
-    console.log('[MOCK] Server function getHolidaysAndExclusions starting');
     const result = (EXCLUSIONS[country] || []).filter(dateStr => dateStr >= startStr && dateStr <= endStr);
-    console.log('[MOCK] Server function getHolidaysAndExclusions completed:', result);
+    // console.log('[MOCK] Server function getHolidaysAndExclusions completed:', result);
     return result;
   },
   checkRTO(startStr, endStr) {
-    console.log('[MOCK] Server function checkRTO starting');
     const result = {
       inOfficeDays: [
         '2025-10-20',
@@ -77,7 +75,7 @@ export const mocks: ServerFunctions = {
         '2026-01-13',
         '2026-01-18'].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
     } // Mocked RTO dates
-    console.log('[MOCK] Server function checkRTO completed:', result);
+    // console.log('[MOCK] Server function checkRTO completed:', result);
     return result;
   }
   // You can add more mock server functions here as needed
