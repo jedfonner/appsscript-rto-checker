@@ -24,7 +24,7 @@
   </div>
   <div class="picker"><input type="date" bind:value={end} /></div>
   <div>
-    <button onclick={submit}> Check RTO </button>
+    <button onclick={submit}> Update RTO </button>
   </div>
 </div>
 
@@ -41,10 +41,6 @@
     font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
     font-size: var(--font-size);
     padding: 0.25rem;
-    border: 1px solid var(--foreground-color);
-    border-radius: 0.25rem;
-    background-color: var(--background-color);
-    color: var(--foreground-color);
   }
   .divider img {
     width: 2rem;

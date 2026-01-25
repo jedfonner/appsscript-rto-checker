@@ -3,13 +3,11 @@
   import RTOChecker from './lib/RTOChecker.svelte';
 
   let endStr = $state(new Date().toISOString().slice(0, 10));
-  $inspect('End String', endStr);
   // 13 weeks ago
   let startStr = $state(
     // svelte-ignore state_referenced_locally
     new Date(Date.now() - 13 * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
   );
-  $inspect('Start String', startStr);
 </script>
 
 <div id="main">

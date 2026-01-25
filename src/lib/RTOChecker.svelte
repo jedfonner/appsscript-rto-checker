@@ -1,5 +1,9 @@
 <script lang="ts">
+  import CalendarDisplay from './CalendarDisplay.svelte';
+  import CollapsibleCard from './CollapsibleCard.svelte';
+  import Config from './Config.svelte';
   import Exclusions from './Exclusions.svelte';
+  import Instructions from './Instructions.svelte';
   import { formatDate } from './utils';
 
   interface AppState {
@@ -39,7 +43,7 @@
       const dayOfWeek = currentDate.getDay();
       if (dayOfWeek >= 1 && dayOfWeek <= 5) {
         const dateStr = currentDate.toISOString().slice(0, 10);
-        if (!exclusions.includes(dateStr)) {
+        if (!exclusions || !exclusions.includes(dateStr)) {
           workDaysCount++;
         }
       }
@@ -68,16 +72,40 @@
       .toISOString()
       .slice(0, 10);
   };
+  const getExclusionsFromServer = async (startStr: string, endStr: string) => {
+    appState.exclusionsDataState = 'loading';
+    console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
+    appState.exclusionsDataState = 'loading';
+    await window.google.script.run
+      .withSuccessHandler((response: string[]) => {
+        // the response is void because testInvokationFromClient does not return anything
+        // update the type if your server function returns a value
+        console.log('getExclusionsFromServer Server response:', response);
+        if (response) {
+          appState.exclusionsDataState = 'loaded';
+          exclusions = response;
+        } else {
+          appState.exclusionsDataState = 'error';
+          appState.exclusionsLoadingError = 'No exclusions data received from server.';
+          console.warn('No exclusions data received from server.');
+        }
+      })
+      .withFailureHandler((error: GasError) => {
+        appState.exclusionsDataState = 'error';
+        appState.exclusionsLoadingError = `${error.message}`;
+        console.error('Error invoking getHolidaysAndExclusions on server:', error);
+      })
+      .getHolidaysAndExclusions('US', startStr, endStr);
+  };
 
-  const getServerData = async () => {
+  const getRTODataFromServer = async (startStr: string, endStr: string) => {
     try {
-      reset();
       appState.rtoDataState = 'loading';
       const result = await window.google.script.run
         .withSuccessHandler((response: { inOfficeDays: string[] }) => {
           // the response is void because testInvokationFromClient does not return anything
           // update the type if your server function returns a value
-          console.log('Server response:', response);
+          console.log('getRTODataFromServer Server response:', response);
           if (response) {
             appState.rtoDataState = 'loaded';
             inOfficeDays = response.inOfficeDays;
@@ -98,143 +126,73 @@
       appState.rtoLoadingError = `${error}`;
     }
   };
+  const getAllData = async () => {
+    await getExclusionsFromServer(startStr, endStr);
+    await getRTODataFromServer(startStr, endStr);
+  };
+  $effect(() => {
+    getAllData();
+  });
 </script>
 
-<main>
-  <section>
-    calendar goes here
-    <div class="card">
-      <div class="result">
-        {#if appState.rtoDataState === 'loading'}
-          <div>Loading...</div>
-        {:else if appState.rtoDataState === 'error'}
-          <div>Error loading data from server.</div>
-          <div>{appState.rtoLoadingError}</div>
-        {:else if appState.rtoDataState === 'loaded'}
-          <div>Number of included work days:</div>
-          <div class="rto-count">
-            {duration}
-          </div>
-          <div>Required minimum in-office days:</div>
-          <div class="rto-count">
-            {minimumDaysInOffice}
-          </div>
-          <div>Your in-office days:</div>
-          <div
-            class="rto-count"
-            class:positive={inOfficeDays.length >= requirement}
-            class:negative={inOfficeDays.length < requirement}
-          >
-            {inOfficeDays.length}
-          </div>
-
-          <div>
-            {#if new Date(endStr) >= new Date()}
-              <p class="small">(including planned future in-office days)</p>
-            {/if}
-          </div>
-        {/if}
+{#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
+  <div>Loading...</div>
+{:else if appState.rtoDataState === 'error' || appState.exclusionsDataState === 'error'}
+  <div>Error loading data from server.</div>
+  <div>{appState.rtoLoadingError}</div>
+{:else if appState.rtoDataState === 'loaded' && appState.exclusionsDataState === 'loaded'}
+  <main>
+    <section>
+      <CalendarDisplay {startStr} {endStr} {inOfficeDays} {exclusions} />
+    </section>
+    <aside>
+      <div class="card">
+        <h3>RTO Status</h3>
+        <div class="rto-stats">
+          {inOfficeDays.length} / {minimumDaysInOffice}
+          {#if inOfficeDays.length < minimumDaysInOffice}
+            ❌
+          {:else}
+            ✅
+          {/if}
+        </div>
+        <div class="rto-details">
+          Included Work Days: {duration} <br />
+        </div>
       </div>
-    </div>
-  </section>
-  <aside>result, instructions, config and exclusions go here</aside>
-</main>
+      <CollapsibleCard header="Instructions" open={true}>
+        <Instructions />
+      </CollapsibleCard>
+      <CollapsibleCard header="RTO Policy" open={true}>
+        <Config bind:requirement bind:measurementWindow />
+      </CollapsibleCard>
+      <CollapsibleCard header="Exclusions" open={false}>
+        <Exclusions {exclusions} />
+      </CollapsibleCard>
+    </aside>
+  </main>
+{/if}
 
 <style>
   main {
-    /* height: 100%; */
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 2fr 1fr;
   }
   section {
-    padding: 0 1rem;
-    /* border-right: 1px solid #333; */
+    padding: 0 1rem 0 0;
     height: 100%;
   }
   aside {
-    padding: 1rem;
-  }
-  aside {
-    background-color: var(--card-background-color);
-    border: 1px solid #333;
-    border-radius: 0.5rem;
-  }
-  .card {
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-    align-items: center;
-    justify-content: center;
-  }
-  h3 {
-    margin-top: 0;
-  }
-  ul {
-    padding-left: 1.5rem;
-  }
-  li {
-    white-space: nowrap;
-  }
-  .small {
-    font-size: 0.8em;
-  }
-  .positive {
-    font-weight: bold;
-    color: #007700;
-  }
-  .negative {
-    font-weight: bold;
-    color: #cc0000;
-  }
-  div.config-input {
-    margin-bottom: 1rem;
-  }
-  label {
-    display: block;
-  }
-  button {
-    border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.5em 1em;
-    font-size: 1em;
-    font-weight: 500;
-    font-family: inherit;
-    background-color: #414141ff;
-    cursor: pointer;
-    transition: border-color 0.25s;
-  }
-  button:hover {
-    border-color: #646cff;
-    transform: scale(1.02);
-  }
-  button:active {
-    transform: scale(0.97);
-  }
-  button:focus,
-  button:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
-  }
-  .result {
-    margin-top: 2rem;
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 1rem;
   }
-  /* p { */
-  /* margin: 0; */
-  /* font-size: 1.2em; */
-  /* } */
-  .rto-count {
-    font-weight: 700;
-    font-size: 10rem;
-    line-height: 7rem;
-    margin-bottom: 2rem;
+  h3 {
+    margin: 0;
   }
-
-  @media (prefers-color-scheme: light) {
-    button {
-      background-color: #c6c6c6ff;
-    }
+  .rto-stats {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
   }
 </style>

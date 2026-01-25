@@ -23,4 +23,33 @@
   <input name="window" type="number" bind:value={measurementWindowTemp} min="1" />
 </div>
 
-<button onclick={updateConfig}> Update </button>
+<div class="config-apply">
+  <button onclick={updateConfig}> Update </button>
+</div>
+
+<style>
+  .config-input {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+  label {
+    width: 200px;
+  }
+  input {
+    width: 100px;
+    padding: 0.25rem;
+    font-size: 1rem;
+  }
+  .config-apply {
+    display: flex;
+    justify-content: flex-end;
+  }
+  button {
+    font-size: 1rem;
+    padding: 0.25rem 0.5rem;
+  }
+</style>

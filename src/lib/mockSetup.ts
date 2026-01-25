@@ -19,6 +19,8 @@ interface MockProxy {
   [key: string]: any;
 }
 
+let mockServerDelay = 1000; // Default delay of 1 second
+
 const createMock = (state = { success: null as any, failure: null as any }) => {
   return new Proxy({}, {
     get: (target, prop: string) => {
@@ -60,13 +62,14 @@ const createMock = (state = { success: null as any, failure: null as any }) => {
           } else if (!error && success) {
             success(result);
           }
-        }, 1000);
+        }, mockServerDelay);
       };
     },
   });
 };
 
-export const setupMock = () => {
+export const setupMock = (delay = 1000) => {
+  mockServerDelay = delay;
   window.google = {
     script: {
       run: createMock() as MockProxy
