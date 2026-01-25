@@ -1,9 +1,11 @@
 <script lang="ts">
   interface AppState {
-    state: 'idle' | 'loading' | 'error' | 'loaded';
-    loadingError?: string;
+    rtoDataState: 'idle' | 'loading' | 'error' | 'loaded';
+    rtoLoadingError?: string;
+    exclusionsDataState: 'idle' | 'loading' | 'error' | 'loaded';
+    exclusionsLoadingError?: string;
   }
-  let appState = $state({
+  let appState: AppState = $state({
     rtoDataState: 'idle',
     rtoLoadingError: '',
     exclusionsDataState: 'idle',
@@ -15,7 +17,6 @@
   let inOfficeDays: string[] = $state([]);
 
   let endStr = $state(new Date().toISOString().slice(0, 10));
-  $inspect('End', endStr);
 
   // 13 weeks ago
   let startStr = $state(
@@ -24,7 +25,6 @@
       .toISOString()
       .slice(0, 10),
   );
-  $inspect('Start', startStr);
 
   const getWorkDaysBetween = (
     startStr: string,
