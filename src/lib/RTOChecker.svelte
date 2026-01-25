@@ -1,4 +1,7 @@
 <script lang="ts">
+  import Exclusions from './Exclusions.svelte';
+  import { formatDate } from './utils';
+
   interface AppState {
     rtoDataState: 'idle' | 'loading' | 'error' | 'loaded';
     rtoLoadingError?: string;
@@ -11,20 +14,15 @@
     exclusionsDataState: 'idle',
     exclusionsLoadingError: '',
   });
+  let { startStr, endStr } = $props<{
+    startStr: string;
+    endStr: string;
+  }>();
+
   let requirement = $state(20); // days
   let measurementWindow = $state(13); // weeks;
   let exclusions: string[] = $state([]);
   let inOfficeDays: string[] = $state([]);
-
-  let endStr = $state(new Date().toISOString().slice(0, 10));
-
-  // 13 weeks ago
-  let startStr = $state(
-    // svelte-ignore state_referenced_locally
-    new Date(Date.now() - measurementWindow * 7 * 24 * 60 * 60 * 1000)
-      .toISOString()
-      .slice(0, 10),
-  );
 
   const getWorkDaysBetween = (
     startStr: string,
@@ -58,36 +56,6 @@
   let minimumDaysInOffice = $derived(Math.ceil(requiredFractionPerDay * duration));
   $inspect('Minimum Days In Office', minimumDaysInOffice);
 
-  const getExclusionsFromServer = async (startStr: string, endStr: string) => {
-    appState.exclusionsDataState = 'loading';
-    console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
-    appState.exclusionsDataState = 'loading';
-    await window.google.script.run
-      .withSuccessHandler((response: string[]) => {
-        // the response is void because testInvokationFromClient does not return anything
-        // update the type if your server function returns a value
-        console.log('Server response:', response);
-        if (response) {
-          appState.exclusionsDataState = 'loaded';
-          exclusions = response;
-        } else {
-          appState.exclusionsDataState = 'error';
-          appState.exclusionsLoadingError = 'No exclusions data received from server.';
-          console.warn('No exclusions data received from server.');
-        }
-      })
-      .withFailureHandler((error: GasError) => {
-        appState.exclusionsDataState = 'error';
-        appState.exclusionsLoadingError = `${error.message}`;
-        console.error('Error invoking getHolidaysAndExclusions on server:', error);
-      })
-      .getHolidaysAndExclusions('US', startStr, endStr);
-  };
-
-  $effect(() => {
-    getExclusionsFromServer(startStr, endStr);
-  });
-
   const reset = async () => {
     inOfficeDays = [];
     appState.rtoDataState = 'idle';
@@ -99,18 +67,6 @@
     startStr = new Date(Date.now() - measurementWindow * 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 10);
-  };
-
-  const formatDate = (dateStr: string): string => {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long', // "Thursday"
-      year: 'numeric', // "2026"
-      month: 'long', // "January"
-      day: 'numeric', // "15"
-      timeZone: 'UTC',
-    };
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', options);
   };
 
   const getServerData = async () => {
@@ -145,44 +101,8 @@
 </script>
 
 <main>
-  <aside>
-    <h3>Instructions</h3>
-    <p>
-      This app will pull your Google Calendar and specifically compute all the days where you
-      set your Working Location to be in the office.
-    </p>
-    <p>
-      It will not work if you do not use the Working Location feature in Google Calendar. See <a
-        href="https://support.google.com/calendar/answer/7638168?hl=en&co=GENIE.Platform%3DDesktop"
-        target="_blank">here</a
-      > for how to set up your Working Location in Google Calendar.
-    </p>
-    <p>
-      It will also not work if you are not diligent about updating your Working Location in
-      Google Calendar when you deviate from your normal in-office schedule.
-    </p>
-    <h3>RTO Expectation</h3>
-
-    <div class="config-input">
-      <label for="requirement">Minimum Days in Office</label>
-      <input name="requirement" type="number" bind:value={requirement} min="0" />
-    </div>
-
-    <div class="config-input">
-      <label for="window">Per # of Weeks </label>
-      <input name="window" type="number" bind:value={measurementWindow} min="1" />
-    </div>
-
-    <button onclick={updateConfig}> Update </button>
-  </aside>
   <section>
-    <div class="card">
-      <div>From <input type="date" bind:value={startStr} onchange={() => reset()} /></div>
-      <div>To <input type="date" bind:value={endStr} onchange={() => reset()} /></div>
-      <div>
-        <button onclick={getServerData}> Check RTO </button>
-      </div>
-    </div>
+    calendar goes here
     <div class="card">
       <div class="result">
         {#if appState.rtoDataState === 'loading'}
@@ -217,42 +137,25 @@
       </div>
     </div>
   </section>
-  <aside class="exclusions">
-    <h3>Holidays & Exclusions</h3>
-    {#if appState.exclusionsDataState === 'loading'}
-      <div>Loading...</div>
-    {:else if appState.exclusionsDataState === 'error'}
-      <div>Error loading data from server.</div>
-      <div>{appState.exclusionsLoadingError}</div>
-    {:else if appState.exclusionsDataState === 'loaded'}
-      <ul>
-        {#each exclusions as dateStr}
-          <li>{formatDate(dateStr)}</li>
-        {/each}
-      </ul>
-    {/if}
-  </aside>
+  <aside>result, instructions, config and exclusions go here</aside>
 </main>
 
 <style>
   main {
     /* height: 100%; */
     display: grid;
-    grid-template-columns: 400px 1fr 400px;
+    grid-template-columns: 3fr 1fr;
   }
   section {
     padding: 0 1rem;
     /* border-right: 1px solid #333; */
     height: 100%;
-    text-align: center;
   }
   aside {
-    margin: 0 1rem;
     padding: 1rem;
   }
   aside {
-    background-color: #ddd;
-    color: #333;
+    background-color: var(--card-background-color);
     border: 1px solid #333;
     border-radius: 0.5rem;
   }
