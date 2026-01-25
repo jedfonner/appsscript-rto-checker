@@ -12,34 +12,36 @@ declare global {
     };
   }
 }
-export const setupMock = () => {
-  const callbacks = {
-    success: null as ((res: any) => void) | null,
-    failure: null as ((err: any) => void) | null,
-  };
 
-  const proxyMock = new Proxy({}, {
+interface MockProxy {
+  withSuccessHandler(fn: (result?: any) => void): MockProxy;
+  withFailureHandler(fn: (error: Error) => void): MockProxy;
+  [key: string]: any;
+}
+
+const createMock = (state = { success: null as any, failure: null as any }) => {
+  return new Proxy({}, {
     get: (target, prop: string) => {
-      // Handle withSuccessHandler
+      // TRAP 1: withSuccessHandler
       if (prop === 'withSuccessHandler') {
         return (fn: any) => {
-          callbacks.success = fn;
-          return proxyMock; // Return the proxy to keep chaining
+          // CRITICAL FIX: Return a NEW proxy with updated state (don't mutate old state)
+          return createMock({ ...state, success: fn });
         };
       }
 
-      // Handle withFailureHandler
+      // TRAP 2: withFailureHandler
       if (prop === 'withFailureHandler') {
         return (fn: any) => {
-          callbacks.failure = fn;
-          return proxyMock; // Return the proxy to keep chaining
+          // CRITICAL FIX: Return a NEW proxy with updated state
+          return createMock({ ...state, failure: fn });
         };
       }
 
       // Invoke mock functions
       return (...args: any[]) => {
         console.log(`[MOCK] Calling server function: ${prop}`, args);
-
+        const { success, failure } = state;
         // Simulate async behavior by using setTimeout to mimic 1s server delay
         setTimeout(() => {
           let result;
@@ -52,23 +54,22 @@ export const setupMock = () => {
           }
 
           // Execute callbacks
-          if (error && callbacks.failure) {
-            callbacks.failure(error);
-          } else if (!error && callbacks.success) {
-            callbacks.success(result);
+          // Execute the CAPTURED handlers (safe from other concurrent calls)
+          if (error && failure) {
+            failure(error);
+          } else if (!error && success) {
+            success(result);
           }
-
-          // Reset callbacks
-          callbacks.success = null;
-          callbacks.failure = null;
         }, 1000);
       };
     },
   });
+};
 
+export const setupMock = () => {
   window.google = {
     script: {
-      run: proxyMock as MockProxy
+      run: createMock() as MockProxy
     }
   };
 }
