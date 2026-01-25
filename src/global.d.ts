@@ -1,30 +1,13 @@
-/* From https://developers.google.com/apps-script/reference/html */
-declare const google: {
-  script: {
-    history: {
-      push: function;
-      replace: function;
-      setChangeHandler: function;
-    };
-    host: {
-      close: function;
-      setHeight: function;
-      setWidth: function;
-      editor: {
-        focus: function;
-      };
-    };
-    run: {
-      withSuccessHandler: function;
-      withFailureHandler: function;
-      withUserObject: function;
-      [key: string]: function;
-    };
-    url: {
-      getLocation: function;
-    };
-  };
-};
+interface ServerFunctions {
+  [key: string]: (...args: any[]) => void;
+}
+
+interface MockProxy {
+  withSuccessHandler(fn: (result?: any) => void): MockProxy;
+  withFailureHandler(fn: (error: Error) => void): MockProxy;
+  [key: string]: any; // Allow indexing for the proxy to work
+}
+
 
 interface GasError {
   message?: string;

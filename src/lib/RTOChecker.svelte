@@ -10,7 +10,7 @@
     exclusionsLoadingError: '',
   });
   let requirement = $state(20); // days
-  let window = $state(13); // weeks;
+  let measurementWindow = $state(13); // weeks;
   let exclusions: string[] = $state([]);
   let inOfficeDays: string[] = $state([]);
 
@@ -20,7 +20,9 @@
   // 13 weeks ago
   let startStr = $state(
     // svelte-ignore state_referenced_locally
-    new Date(Date.now() - window * 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+    new Date(Date.now() - measurementWindow * 7 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .slice(0, 10),
   );
   $inspect('Start', startStr);
 
@@ -51,7 +53,7 @@
   let duration: number = $derived(getWorkDaysBetween(startStr, endStr, exclusions));
 
   $inspect('Duration', duration);
-  let requiredFractionPerDay: number = $derived.by(() => requirement / window / 5);
+  let requiredFractionPerDay: number = $derived.by(() => requirement / measurementWindow / 5);
   $inspect('Required Fraction Per Day', requiredFractionPerDay);
   let minimumDaysInOffice = $derived(Math.ceil(requiredFractionPerDay * duration));
   $inspect('Minimum Days In Office', minimumDaysInOffice);
@@ -59,34 +61,27 @@
   const getExclusionsFromServer = async (startStr: string, endStr: string) => {
     appState.exclusionsDataState = 'loading';
     console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
-    //@ts-ignore
-    if (!globalThis.inGAS) {
-      console.warn('Not running in GAS environment. Loading local exclusions data.');
-      appState.exclusionsDataState = 'loaded';
-      exclusions = ['2025-11-27', '2025-12-25', '2026-01-01'];
-    } else {
-      appState.exclusionsDataState = 'loading';
-      await google.script.run
-        .withSuccessHandler((response: string[]) => {
-          // the response is void because testInvokationFromClient does not return anything
-          // update the type if your server function returns a value
-          console.log('Server response:', response);
-          if (response) {
-            appState.exclusionsDataState = 'loaded';
-            exclusions = response;
-          } else {
-            appState.exclusionsDataState = 'error';
-            appState.exclusionsLoadingError = 'No exclusions data received from server.';
-            console.warn('No exclusions data received from server.');
-          }
-        })
-        .withFailureHandler((error: GasError) => {
+    appState.exclusionsDataState = 'loading';
+    await window.google.script.run
+      .withSuccessHandler((response: string[]) => {
+        // the response is void because testInvokationFromClient does not return anything
+        // update the type if your server function returns a value
+        console.log('Server response:', response);
+        if (response) {
+          appState.exclusionsDataState = 'loaded';
+          exclusions = response;
+        } else {
           appState.exclusionsDataState = 'error';
-          appState.exclusionsLoadingError = `${error.message}`;
-          console.error('Error invoking getHolidaysAndExclusions on server:', error);
-        })
-        .getHolidaysAndExclusions('US', startStr, endStr);
-    }
+          appState.exclusionsLoadingError = 'No exclusions data received from server.';
+          console.warn('No exclusions data received from server.');
+        }
+      })
+      .withFailureHandler((error: GasError) => {
+        appState.exclusionsDataState = 'error';
+        appState.exclusionsLoadingError = `${error.message}`;
+        console.error('Error invoking getHolidaysAndExclusions on server:', error);
+      })
+      .getHolidaysAndExclusions('US', startStr, endStr);
   };
 
   $effect(() => {
@@ -101,7 +96,7 @@
 
   const updateConfig = () => {
     reset();
-    startStr = new Date(Date.now() - window * 7 * 24 * 60 * 60 * 1000)
+    startStr = new Date(Date.now() - measurementWindow * 7 * 24 * 60 * 60 * 1000)
       .toISOString()
       .slice(0, 10);
   };
@@ -121,61 +116,26 @@
   const getServerData = async () => {
     try {
       reset();
-      //@ts-ignore
-      if (!globalThis.inGAS) {
-        console.warn('Not running in GAS environment. Loading local data.');
-        inOfficeDays = [
-          '2025-10-20',
-          '2025-10-21',
-          '2025-10-23',
-          '2025-10-27',
-          '2025-10-28',
-          '2025-10-30',
-          '2025-11-03',
-          '2025-11-04',
-          '2025-11-06',
-          '2025-11-12',
-          '2025-11-13',
-          '2025-11-18',
-          '2025-11-22',
-          '2025-11-23',
-          '2025-12-01',
-          '2025-12-02',
-          '2025-12-04',
-          '2025-12-08',
-          '2025-12-09',
-          '2025-12-11',
-          '2025-12-16',
-          '2026-01-06',
-          '2026-01-08',
-          '2026-01-12',
-          '2026-01-13',
-          '2026-01-18',
-        ];
-        appState.rtoDataState = 'loaded';
-      } else {
-        console.log('Running in GAS environment. Invoking server function.');
-        appState.rtoDataState = 'loading';
-        const result = await google.script.run
-          .withSuccessHandler((response: { inOfficeDays: string[] }) => {
-            // the response is void because testInvokationFromClient does not return anything
-            // update the type if your server function returns a value
-            console.log('Server response:', response);
-            if (response) {
-              appState.rtoDataState = 'loaded';
-              inOfficeDays = response.inOfficeDays;
-            } else {
-              appState.rtoDataState = 'error';
-              appState.rtoLoadingError = 'No data received from server.';
-            }
-          })
-          .withFailureHandler((error: GasError) => {
-            console.error('Error invoking server function:', error);
+      appState.rtoDataState = 'loading';
+      const result = await window.google.script.run
+        .withSuccessHandler((response: { inOfficeDays: string[] }) => {
+          // the response is void because testInvokationFromClient does not return anything
+          // update the type if your server function returns a value
+          console.log('Server response:', response);
+          if (response) {
+            appState.rtoDataState = 'loaded';
+            inOfficeDays = response.inOfficeDays;
+          } else {
             appState.rtoDataState = 'error';
-            appState.rtoLoadingError = `${error.message}`;
-          })
-          .checkRTO(startStr, endStr);
-      }
+            appState.rtoLoadingError = 'No data received from server.';
+          }
+        })
+        .withFailureHandler((error: GasError) => {
+          console.error('Error invoking server function:', error);
+          appState.rtoDataState = 'error';
+          appState.rtoLoadingError = `${error.message}`;
+        })
+        .checkRTO(startStr, endStr);
     } catch (error) {
       console.error('Unexpected error:', error);
       appState.rtoDataState = 'error';
@@ -210,7 +170,7 @@
 
     <div class="config-input">
       <label for="window">Per # of Weeks </label>
-      <input name="window" type="number" bind:value={window} min="1" />
+      <input name="window" type="number" bind:value={measurementWindow} min="1" />
     </div>
 
     <button onclick={updateConfig}> Update </button>
@@ -358,10 +318,10 @@
     align-items: center;
     gap: 1rem;
   }
-  p {
-    /* margin: 0; */
-    /* font-size: 1.2em; */
-  }
+  /* p { */
+  /* margin: 0; */
+  /* font-size: 1.2em; */
+  /* } */
   .rto-count {
     font-weight: 700;
     font-size: 10rem;
