@@ -95,7 +95,10 @@
 </script>
 
 {#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
-  <div class="loading">Loading...</div>
+  <div class="loading">
+    Loading... Please wait, this can take some time while your calendar is loaded
+    <Instructions />
+  </div>
 {:else if appState.rtoDataState === 'error' || appState.exclusionsDataState === 'error'}
   <div class="error">
     <div>Error loading data from server.</div>
