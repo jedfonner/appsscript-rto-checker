@@ -4,11 +4,15 @@
   font-weight: 400;
 
   color-scheme: light dark;
-  --foreground-color: light-dark(rgba(0, 0, 0, 0.87), rgba(255, 255, 255, 0.87));
+  --color-light: rgba(0, 0, 0, 0.87);
+  --color-dark: rgba(255, 255, 255, 0.87);
+  --foreground-color: light-dark(var(--color-light), var(--color-dark));
   --background-color: light-dark(#f0f1f6, #000000);
   --card-background-color: light-dark(#ffffff, #2a2929);
-  --accent-color: light-dark(#34d33f, #1f8716);
+  --accent-color: light-dark(#65fc6f, #004f00);
   --disabled-color: light-dark(#aeaeae, #333333);
+  --positive-color: light-dark(#65fc6f, #004f00);
+  --negative-color: light-dark(#ffa8a8, #660000);
 
   color: var(--foreground-color);
   background-color: var(--background-color);
@@ -20,8 +24,7 @@
 }
 
 a {
-  color: var(--accent-color);
-  font-weight: 500;
+  font-weight: 700;
   text-decoration: underline;
 }
 

@@ -133,6 +133,9 @@
   $effect(() => {
     getAllData();
   });
+  let metRequirement: boolean = $derived.by(() => {
+    return inOfficeDays.length >= minimumDaysInOffice;
+  });
 </script>
 
 {#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
@@ -146,14 +149,18 @@
       <CalendarDisplay {startStr} {endStr} {inOfficeDays} {exclusions} />
     </section>
     <aside>
-      <div class="card">
+      <div
+        class="card"
+        class:met-requirements={metRequirement}
+        class:failed-requirements={!metRequirement}
+      >
         <h3>RTO Status</h3>
         <div class="rto-stats">
-          {inOfficeDays.length} / {minimumDaysInOffice}
-          {#if inOfficeDays.length < minimumDaysInOffice}
-            ❌
-          {:else}
+          {inOfficeDays.length} in office / {minimumDaysInOffice} required
+          {#if metRequirement}
             ✅
+          {:else}
+            ❌
           {/if}
         </div>
         <div class="rto-details">
@@ -194,5 +201,13 @@
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
+  }
+  .met-requirements {
+    background-color: var(--positive-color);
+    /* color: var(--color-light); */
+  }
+  .failed-requirements {
+    background-color: var(--negative-color);
+    /* color: var(--color-light); */
   }
 </style>
