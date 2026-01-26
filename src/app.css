@@ -23,6 +23,30 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.light-theme {
+  --foreground-color: var(--color-light);
+  --background-color: #f0f1f6;
+  --card-background-color: #ffffff;
+  --accent-color: #65fc6f;
+  --disabled-color: #aeaeae;
+  --positive-color: #65fc6f;
+  --negative-color: #ffa8a8;
+  color: var(--foreground-color);
+  background-color: var(--background-color);
+}
+
+.dark-theme {
+  --foreground-color: var(--color-dark);
+  --background-color: #000000;
+  --card-background-color: #2a2929;
+  --accent-color: #004f00;
+  --disabled-color: #111111;
+  --positive-color: #004f00;
+  --negative-color: #660000;
+  color: var(--foreground-color);
+  background-color: var(--background-color);
+}
+
 a {
   font-weight: 700;
   text-decoration: underline;
@@ -43,7 +67,6 @@ body {
   /* max-width: 1280px; */
   /* margin: 0 auto; */
   width: 100%;
-  padding: 2rem;
 }
 
 .card {

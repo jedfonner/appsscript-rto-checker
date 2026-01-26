@@ -59,7 +59,7 @@
     <h3>Legend</h3>
     <div class="legend-items">
       <div>
-        <p>Out of range</p>
+        <p>Not in range</p>
         <div class="legend-item"><CalendarCell day={1} isOutOfRange={true} /></div>
       </div>
       <div>

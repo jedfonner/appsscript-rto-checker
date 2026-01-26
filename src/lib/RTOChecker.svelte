@@ -159,7 +159,7 @@
     margin: 0;
   }
   .rto-stats {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
     margin-bottom: 0.5rem;
   }
