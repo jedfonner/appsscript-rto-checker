@@ -10,7 +10,7 @@
   --background-color: light-dark(#f0f1f6, #000000);
   --card-background-color: light-dark(#ffffff, #2a2929);
   --accent-color: light-dark(#65fc6f, #004f00);
-  --disabled-color: light-dark(#aeaeae, #333333);
+  --disabled-color: light-dark(#aeaeae, #111111);
   --positive-color: light-dark(#65fc6f, #004f00);
   --negative-color: light-dark(#ffa8a8, #660000);
 

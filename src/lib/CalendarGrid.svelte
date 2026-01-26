@@ -1,4 +1,6 @@
 <script lang="ts">
+  import CalendarCell from './CalendarCell.svelte';
+
   let { year, month, startStr, endStr, inOfficeDays, exclusions } = $props<{
     year: number;
     month: number;
@@ -37,15 +39,10 @@
   {/each}
   {#each days as day}
     {@const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`}
-    <div
-      class="calendar-cell day"
-      class:in-office={inOfficeDays.includes(dateStr)}
-      class:out-of-office={!inOfficeDays.includes(dateStr)}
-      class:excluded={exclusions.includes(dateStr)}
-      class:out-of-range={dateStr < startStr || dateStr > endStr}
-    >
-      {day}
-    </div>
+    {@const inOffice = inOfficeDays.includes(dateStr)}
+    {@const isExcluded = exclusions.includes(dateStr)}
+    {@const isOutOfRange = dateStr < startStr || dateStr > endStr}
+    <CalendarCell {day} {inOffice} {isExcluded} {isOutOfRange} />
   {/each}
 </div>
 
@@ -64,24 +61,5 @@
     text-align: center;
     height: 1.5rem;
     width: 100%;
-  }
-  .calendar-cell.day {
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-end;
-    border: 1px solid var(--foreground-color);
-    border-radius: 0.25rem;
-    font-size: 1.25rem;
-    padding: 0.25em;
-  }
-  .calendar-cell.in-office {
-    background-color: var(--accent-color);
-  }
-  .calendar-cell.excluded {
-    background-color: var(--disabled-color);
-    filter: brightness(0.8);
-  }
-  .calendar-cell.out-of-range {
-    opacity: 0.4;
   }
 </style>
