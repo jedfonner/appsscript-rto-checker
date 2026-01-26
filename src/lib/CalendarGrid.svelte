@@ -34,9 +34,11 @@
     <div class="calendar-cell header">{day}</div>
   {/each}
   <!-- Calendar grid for {year}-{month + 1} -->
-  {#each Array(startsOn - 1) as _}
-    <div class="calendar-cell empty"></div>
-  {/each}
+  {#if startsOn > 0}
+    {#each Array(startsOn - 1) as _}
+      <div class="calendar-cell empty"></div>
+    {/each}
+  {/if}
   {#each days as day}
     {@const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`}
     {@const inOffice = inOfficeDays.includes(dateStr)}

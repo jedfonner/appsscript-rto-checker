@@ -73,7 +73,8 @@ export const mocks: ServerFunctions = {
         '2026-01-08',
         '2026-01-12',
         '2026-01-13',
-        '2026-01-18'].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
+        '2026-01-15',
+        '2026-02-02'].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
     } // Mocked RTO dates
     // console.log('[MOCK] Server function checkRTO completed:', result);
     return result;

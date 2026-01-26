@@ -26,10 +26,9 @@ export const getWorkDaysBetween = (
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
       const dateStr = currentDate.toISOString().slice(0, 10);
       if (!exclusions || !exclusions.includes(dateStr)) {
-        console.log('Counting workday:', dateStr);
         workDaysCount++;
       } else {
-        console.log('Excluding date:', dateStr);
+        // console.log('Excluding date:', dateStr);
       }
     }
     currentDate.setDate(currentDate.getDate() + 1);
