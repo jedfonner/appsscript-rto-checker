@@ -96,7 +96,9 @@
 
 {#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
   <div class="loading">
-    Loading... Please wait, this can take some time while your calendar is loaded
+    <p class="attention">
+      Loading... please be patient, this can take some time as your calendar is loaded.
+    </p>
     <Instructions />
   </div>
 {:else if appState.rtoDataState === 'error' || appState.exclusionsDataState === 'error'}
@@ -128,13 +130,13 @@
           Included Work Days: {duration} <br />
         </div>
       </div>
-      <CollapsibleCard header="Instructions" open={true}>
-        <Instructions />
-      </CollapsibleCard>
       <CollapsibleCard header="RTO Policy" open={true}>
         <Config bind:requirement bind:measurementWindow />
       </CollapsibleCard>
-      <CollapsibleCard header="Exclusions" open={false}>
+      <CollapsibleCard header="Instructions" open={true}>
+        <Instructions />
+      </CollapsibleCard>
+      <CollapsibleCard header="Exclusions List" open={false}>
         <Exclusions {exclusions} />
       </CollapsibleCard>
     </aside>
@@ -158,6 +160,10 @@
   h3 {
     margin: 0;
   }
+  .loading p.attention {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
   .rto-stats {
     font-size: 1.8rem;
     font-weight: bold;
@@ -165,10 +171,8 @@
   }
   .met-requirements {
     background-color: var(--positive-color);
-    /* color: var(--color-light); */
   }
   .failed-requirements {
     background-color: var(--negative-color);
-    /* color: var(--color-light); */
   }
 </style>

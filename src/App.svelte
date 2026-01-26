@@ -34,7 +34,7 @@
 <div id="main">
   <header>
     <h1>
-      RTO Tracker
+      Google Calendar RTO Tracker
       {#if theme == 'light'}
         <button onclick={toggleTheme} onkeydown={toggleTheme} title="Change to dark theme"
           >☀️</button
@@ -64,7 +64,7 @@
     margin-bottom: 1rem;
   }
   h1 {
-    font-size: 3rem;
+    font-size: 2.6rem;
     margin: 0;
     display: flex;
     flex-direction: row;

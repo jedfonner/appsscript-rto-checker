@@ -9,9 +9,9 @@
   --foreground-color: light-dark(var(--color-light), var(--color-dark));
   --background-color: light-dark(#f0f1f6, #000000);
   --card-background-color: light-dark(#ffffff, #2a2929);
-  --accent-color: light-dark(#65fc6f, #004f00);
+  --accent-color: light-dark(#65fc6f, #017501);
   --disabled-color: light-dark(#aeaeae, #111111);
-  --positive-color: light-dark(#65fc6f, #004f00);
+  --positive-color: light-dark(#65fc6f, #017501);
   --negative-color: light-dark(#ffa8a8, #660000);
 
   color: var(--foreground-color);
@@ -39,9 +39,9 @@
   --foreground-color: var(--color-dark);
   --background-color: #000000;
   --card-background-color: #2a2929;
-  --accent-color: #004f00;
+  --accent-color: #017501;
   --disabled-color: #111111;
-  --positive-color: #004f00;
+  --positive-color: #017501;
   --negative-color: #660000;
   color: var(--foreground-color);
   background-color: var(--background-color);

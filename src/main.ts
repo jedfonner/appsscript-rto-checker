@@ -5,7 +5,7 @@ import { setupMock } from './lib/mockSetup';
 
 // If running in development mode locally, set up the mock server functions
 if (import.meta.env.DEV) {
-  setupMock(); // Pass a number to change the default delay for local dev
+  setupMock(0); // Pass a number to change the default delay for local dev
 }
 
 const app = mount(App, {

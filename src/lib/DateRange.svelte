@@ -54,6 +54,7 @@
     border: 1px solid var(--foreground-color);
     border-radius: 0.25rem;
     height: 100%;
+    min-width: max-content;
   }
   button:hover {
     transform: scale(1.05);
