@@ -4,6 +4,7 @@
   import Config from './Config.svelte';
   import Exclusions from './Exclusions.svelte';
   import Instructions from './Instructions.svelte';
+  import Spinner from './Spinner.svelte';
   import { getWorkDaysBetween } from './utils';
 
   interface AppState {
@@ -97,7 +98,7 @@
 {#if appState.rtoDataState === 'loading' || appState.exclusionsDataState === 'loading'}
   <div class="loading">
     <p class="attention">
-      Loading... please be patient, this can take some time as your calendar is loaded.
+      <Spinner /> Loading... please be patient, this can take some time as your calendar is loaded.
     </p>
     <Instructions />
   </div>
@@ -163,6 +164,10 @@
   .loading p.attention {
     font-size: 1.2rem;
     font-weight: bold;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
   }
   .rto-stats {
     font-size: 1.8rem;

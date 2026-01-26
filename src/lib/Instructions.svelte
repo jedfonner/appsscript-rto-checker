@@ -3,7 +3,7 @@
   Location to be in the office.
 </p>
 <p>
-  It will <u>not wor</u>k if you do not use the Working Location feature in Google Calendar.
+  It will <u>not work</u> if you do not use the Working Location feature in Google Calendar.
   See
   <a
     href="https://support.google.com/calendar/answer/7638168?hl=en&co=GENIE.Platform%3DDesktop"
