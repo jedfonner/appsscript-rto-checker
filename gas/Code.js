@@ -93,8 +93,8 @@ function checkRTO(startStr, endStr) {
 
     return {
       title: title,
-      start: start,
-      end: end,
+      startTime: startTime,
+      endTime: endTime,
       eventType: eventType,
       isAllDayEvent: isAllDayEvent,
       isRecurringEvent: isRecurringEvent
