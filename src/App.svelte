@@ -2,6 +2,9 @@
   import { onMount } from 'svelte';
   import DateRange from './lib/DateRange.svelte';
   import RTOChecker from './lib/RTOChecker.svelte';
+  import CountryPicker from './lib/CountryPicker.svelte';
+
+  let country: 'CA' | 'UK' | 'US' = $state('US');
 
   let endStr = $state(new Date().toISOString().slice(0, 10));
   // 13 weeks ago
@@ -45,9 +48,12 @@
         >
       {/if}
     </h1>
-    <DateRange bind:startStr bind:endStr />
+    <div class="pickers">
+      <DateRange bind:startStr bind:endStr />
+      <CountryPicker bind:country />
+    </div>
   </header>
-  <RTOChecker {startStr} {endStr} />
+  <RTOChecker {startStr} {endStr} {country} />
 </div>
 
 <style>
@@ -62,6 +68,12 @@
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1rem;
+  }
+  .pickers {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: flex-end;
   }
   h1 {
     font-size: 2.6rem;

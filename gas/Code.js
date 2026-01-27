@@ -14,8 +14,53 @@ function include(filename) {
 
 /**************** RTO Code ****************/
 
- const EXCLUSIONS = {
-  'US':[
+const EXCLUSIONS = {
+  'CA': [
+    "2025-09-01", // Labor day
+    "2025-09-30", // National Day for Truth and Reconciliation
+    "2025-10-13", // Thanksgiving
+    "2025-11-11", // Rememberence Day
+    "2025-12-22", // Christmas break
+    "2025-12-23",
+    "2025-12-24",
+    "2025-12-25",
+    "2025-12-26",
+    "2025-12-27",
+    "2025-12-28",
+    "2025-12-29",
+    "2025-12-30",
+    "2025-12-31", // New Years Eve
+    "2026-01-01", // New Years Day
+    "2026-01-02",
+    "2026-02-16", // Family Day
+    "2026-04-03", // Good Friday
+    "2026-05-18", // Victoria Day
+    "2026-07-01", // Canada Day
+    "2026-08-03", // Civic Holiday
+    "2026-09-07", // Labour Day
+    "2026-09-30", // National Day for Truth and Reconciliation
+    "2026-10-12", // Thanksgiving
+    "2026-11-11" // Rememberence Day
+  ],
+  'UK': [
+    "2025-08-25", // Summer Bank Holiday
+    "2025-12-22", // Christmas break
+    "2025-12-23",
+    "2025-12-24",
+    "2025-12-25",
+    "2025-12-26",
+    "2025-12-27",
+    "2025-12-28",
+    "2025-12-29",
+    "2025-12-31", // New Years Eve
+    "2026-01-01", // New Years Day
+    "2026-01-02",
+    "2026-04-06", // Easter Monday
+    "2026-05-04", // Early May Bank Holiday
+    "2026-05-25", // Spring Bank Holiday
+    "2026-08-31"  // Summer Bank Holiday
+  ],
+  'US': [
     '2025-09-01', // Labor Day
     '2025-10-13', // Columbus Day
     '2025-11-11', // Veterans Day
@@ -104,11 +149,11 @@ function checkRTO(startStr, endStr) {
   });
 
   const inOfficeDays = getInOfficeDays(start, end, allEventData);
-  Logger.log("Total in office from " + start.toDateString() + " to " + end.toDateString() + ": "+ inOfficeDays.length);
+  Logger.log("Total in office from " + start.toDateString() + " to " + end.toDateString() + ": " + inOfficeDays.length);
 
   // Return strings not Dates because DAte objects break GAS HTMLService communication
   return {
-    inOfficeDays: inOfficeDays.map(date => date.toISOString().slice(0,10)),
+    inOfficeDays: inOfficeDays.map(date => date.toISOString().slice(0, 10)),
   }
 }
 
@@ -117,7 +162,7 @@ function getInOfficeDays(start, end, allEventData) {
   // const weeks = getWorkWeeks(start, end);
   const weekDays = getWeekDays(start, end);
 
-  for(let i = 0; i < weekDays.length; i++){
+  for (let i = 0; i < weekDays.length; i++) {
     const day = weekDays[i];
     const isOOO = isOutOfOfficeDay(day, allEventData);
     const inOffice = isInOfficeDay(day, allEventData);

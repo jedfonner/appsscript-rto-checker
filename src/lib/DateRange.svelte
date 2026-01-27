@@ -54,9 +54,9 @@
     padding: 0.25rem;
     color: var(--foreground-color);
   }
-
   .divider {
     font-size: 2rem;
+    line-height: 1;
     margin: 0 1rem;
   }
   button {

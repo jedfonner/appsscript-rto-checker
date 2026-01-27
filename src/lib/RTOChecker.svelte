@@ -19,9 +19,10 @@
     exclusionsDataState: 'idle',
     exclusionsLoadingError: '',
   });
-  let { startStr, endStr } = $props<{
+  let { startStr, endStr, country } = $props<{
     startStr: string;
     endStr: string;
+    country: 'CA' | 'UK' | 'US';
   }>();
 
   let requirement = $state(20); // days
@@ -36,7 +37,11 @@
     return inOfficeDays.length >= minimumDaysInOffice;
   });
 
-  const getExclusionsFromServer = async (startStr: string, endStr: string) => {
+  const getExclusionsFromServer = async (
+    startStr: string,
+    endStr: string,
+    country: string,
+  ) => {
     appState.exclusionsDataState = 'loading';
     console.log('Fetching exclusions from server for range:', startStr, 'to', endStr);
     appState.exclusionsDataState = 'loading';
@@ -57,7 +62,7 @@
         appState.exclusionsLoadingError = `${error.message}`;
         console.error('Error invoking getHolidaysAndExclusions on server:', error);
       })
-      .getHolidaysAndExclusions('US', startStr, endStr);
+      .getHolidaysAndExclusions(country, startStr, endStr);
   };
 
   const getRTODataFromServer = async (startStr: string, endStr: string) => {
@@ -87,7 +92,7 @@
     }
   };
   const getAllData = async () => {
-    await getExclusionsFromServer(startStr, endStr);
+    await getExclusionsFromServer(startStr, endStr, country);
     await getRTODataFromServer(startStr, endStr);
   };
   $effect(() => {
@@ -137,7 +142,7 @@
       <CollapsibleCard header="Instructions" open={true}>
         <Instructions />
       </CollapsibleCard>
-      <CollapsibleCard header="Exclusions List" open={false}>
+      <CollapsibleCard header="Exclusions List for {country}" open={false}>
         <Exclusions {exclusions} />
       </CollapsibleCard>
     </aside>
