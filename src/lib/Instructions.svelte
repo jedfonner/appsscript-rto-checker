@@ -14,3 +14,15 @@
   It will <u>also not work</u> if you are not diligent about updating your Working Location in Google
   Calendar when you deviate from your normal in-office schedule.
 </p>
+<h4>Disclaimer:</h4>
+<p>
+  <b>This is not an HR-approved tool!</b> This is a simple web app, not a lawyer. If the Badge Swipe
+  Police come for you, do not use screenshots of this tool as a defense. It's not AI, but like AI,
+  it can make mistakes, so always verify your own RTO data.
+</p>
+
+<style>
+  h4 {
+    margin: 0;
+  }
+</style>

@@ -35,6 +35,8 @@ function include(filename) {
     '2026-01-01', // New Year's Day
     '2026-01-02',
     '2026-01-19', // MLK Day
+    '2026-01-26', // Winter Storm Fern
+    '2026-01-27', // Winter Storm Fern
     '2026-02-16', // Presidents Day
     '2026-05-25', // Memorial Day
     '2026-06-19', // Juneteenth
