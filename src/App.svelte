@@ -2,7 +2,6 @@
   import { onMount } from 'svelte';
   import DateRange from './lib/DateRange.svelte';
   import RTOChecker from './lib/RTOChecker.svelte';
-  import CountryPicker from './lib/CountryPicker.svelte';
 
   let country: 'CA' | 'UK' | 'US' = $state('US');
 
@@ -49,8 +48,7 @@
       {/if}
     </h1>
     <div class="pickers">
-      <DateRange bind:startStr bind:endStr />
-      <CountryPicker bind:country />
+      <DateRange bind:startStr bind:endStr bind:country />
     </div>
   </header>
   <RTOChecker {startStr} {endStr} {country} />
