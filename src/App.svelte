@@ -88,5 +88,6 @@
     background-color: unset;
     border: unset;
     font-size: 2rem;
+    cursor: pointer;
   }
 </style>

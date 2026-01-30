@@ -81,6 +81,7 @@
     height: 100%;
     border-radius: 0.25rem;
     background-color: var(--background-color);
+    color: var(--foreground-color);
   }
   button {
     height: 100%;
