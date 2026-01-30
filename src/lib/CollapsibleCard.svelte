@@ -10,15 +10,25 @@
   }>();
 
   let isOpen: boolean = $state(open);
+
+  const toggle = (e: Event) => {
+    e.preventDefault();
+    isOpen = !isOpen;
+  };
 </script>
 
 <div class="card">
-  <div class="top-row">
+  <div
+    class="top-row"
+    onclick={toggle}
+    onkeydown={toggle}
+    role="button"
+    tabindex="0"
+    title={isOpen ? 'Click to collapse' : 'Click to expand'}
+  >
     <h3>{header}</h3>
-    <div>
-      <button onclick={() => (isOpen = !isOpen)}>
-        {isOpen ? '▼' : '▲'}
-      </button>
+    <div class="arrows">
+      {isOpen ? '▼' : '▲'}
     </div>
   </div>
   {#if isOpen}
@@ -31,21 +41,14 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    cursor: pointer;
   }
   h3 {
     margin: 0;
   }
-  button {
-    background: none;
-    border: none;
+  .arrows {
     color: var(--accent-color);
-    font-size: 1.2rem;
-    cursor: pointer;
-  }
-  button:hover {
-    transform: scale(1.2);
-  }
-  button:active {
-    transform: scale(0.9);
+    font-size: 1.5rem;
+    line-height: 1rem;
   }
 </style>
