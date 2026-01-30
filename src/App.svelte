@@ -1,7 +1,16 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { outerWidth } from 'svelte/reactivity/window';
   import DateRange from './lib/DateRange.svelte';
   import RTOChecker from './lib/RTOChecker.svelte';
+
+  let title = $derived.by(() => {
+    if (outerWidth && outerWidth.current && outerWidth.current > 1400) {
+      return 'Google Calendar RTO Tracker';
+    } else {
+      return 'RTO Tracker';
+    }
+  });
 
   let country: 'CA' | 'UK' | 'US' = $state('US');
 
@@ -36,7 +45,7 @@
 <div id="main">
   <header>
     <h1>
-      Google Calendar RTO Tracker
+      {title}
       {#if theme == 'light'}
         <button onclick={toggleTheme} onkeydown={toggleTheme} title="Change to dark theme"
           >☀️</button
@@ -74,7 +83,7 @@
     align-items: flex-end;
   }
   h1 {
-    font-size: 2.6rem;
+    font-size: clamp(1.5rem, 2dvw, 3rem);
     margin: 0;
     display: flex;
     flex-direction: row;

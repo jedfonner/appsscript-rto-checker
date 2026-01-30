@@ -40,7 +40,7 @@
     <option value="US">🇺🇸 US</option>
   </select>
   <div class="button-wrapper">
-    <button onclick={submit}> Update RTO </button>
+    <button onclick={submit}> Calculate RTO </button>
   </div>
 </div>
 
