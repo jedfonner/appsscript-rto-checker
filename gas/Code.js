@@ -41,7 +41,7 @@ from the docs: https://developers.google.com/apps-script/guides/html/reference/r
 function checkRTO(startStr, endStr) {
   Logger.log("Checking RTO from %s to %s", startStr, endStr);
   const start = new Date(startStr);
-  const end = new Date(endStr);
+  const end = new Date(endStr); end.setDate(end.getDate() + 1); // increment by 1 to be inclusive
   const calendarIdToUse = Session.getActiveUser().getEmail();
   const calendar = CalendarApp.getCalendarById(calendarIdToUse);
 

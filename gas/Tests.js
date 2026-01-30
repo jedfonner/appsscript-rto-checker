@@ -3,14 +3,14 @@ function testGetInOfficeDays() {
   const calendarIdToUse = Session.getActiveUser().getEmail();
   const calendar = CalendarApp.getCalendarById(calendarIdToUse);
   const now = new Date();
-  const startOfRange = incrementDateByWeeks(now, -1 * 6);
-  const endOfRange = incrementDateByWeeks(now, 4) // look 4 weeks into the future
+  const startOfRange = new Date(2026, 0, 26);
+  const endOfRange = new Date(2026, 0, 30);
+  endOfRange.setDate(endOfRange.getDate() + 1); // increment by 1 to be inclusive
   const allEvents = calendar.getEvents(startOfRange, endOfRange);
   const allEventData = createEventProjection(allEvents);
 
-  const start = new Date(2025, 11, 8); //Dec 15
-  const end = new Date(2025, 11, 31) // Dec 20
-  const result = getInOfficeDays(start, end, allEventData);
+  const result = getInOfficeDays(startOfRange, endOfRange, allEventData);
+  if (!result || result.length == 0) Logger.log("No in office days found");
   result.forEach(day => Logger.log("In office on " + day.toDateString()))
 }
 
