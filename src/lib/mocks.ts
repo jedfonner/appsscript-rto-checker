@@ -66,6 +66,8 @@ const EXCLUSIONS: Record<string, string[]> = {
     '2026-01-19', // MLK Day
     '2026-01-26', // Winter Storm Fern
     '2026-01-27', // Winter Storm Fern
+    '2026-01-28', // Winter Storm Fern
+    '2026-01-29', // Winter Storm Fern
     '2026-02-16', // Presidents Day
     '2026-05-25', // Memorial Day
     '2026-06-19', // Juneteenth
@@ -107,8 +109,6 @@ export const mocks: ServerFunctions = {
         '2025-11-12',
         '2025-11-13',
         '2025-11-18',
-        '2025-11-22',
-        '2025-11-23',
         '2025-12-01',
         '2025-12-02',
         '2025-12-04',
@@ -121,6 +121,10 @@ export const mocks: ServerFunctions = {
         '2026-01-12',
         '2026-01-13',
         '2026-01-15',
+        '2026-01-20',
+        '2026-01-22',
+        '2026-01-29', // this overlaps with an exclusion but should be counted anyway
+        '2026-01-30',
         '2026-02-02'].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
     } // Mocked RTO dates
     // console.log('[MOCK] Server function checkRTO completed:', result);
