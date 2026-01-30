@@ -27,7 +27,7 @@ function getWeekDays(start, end) {
     if (dayOfWeek >= 1 && dayOfWeek <= 5) {
       // const yyyymmdd = dayOfWeek.toLocaleDateString("en-US", {year: "numeric", month: "2-digit", day: "2-digit"});
       // if(!EXCLUSIONS_US.includes(yyyymmdd)) {
-        weekDays.push(new Date(current.getTime()));
+      weekDays.push(new Date(current.getTime()));
       // }
     }
     current.setDate(current.getDate() + 1);
@@ -66,7 +66,7 @@ function getWorkWeeks(start, end) {
       friday.setSeconds(59);
 
       // Add to list if not already added
-      weeks.push({monday, friday});
+      weeks.push({ monday, friday });
 
       // Jump to the following Monday
       current.setDate(monday.getDate() + 7);
