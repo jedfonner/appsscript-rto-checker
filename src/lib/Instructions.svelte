@@ -20,9 +20,16 @@
   Police come for you, do not use screenshots of this tool as a defense. It's not AI, but like AI,
   it can make mistakes, so always verify your own RTO data.
 </p>
+<p class="version">
+  Version {import.meta.env.VITE_APP_VERSION}
+</p>
 
 <style>
   h4 {
     margin: 0;
+  }
+  .version {
+    font-size: 0.8rem;
+    filter: brightness(0.8);
   }
 </style>
