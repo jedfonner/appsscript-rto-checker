@@ -48,26 +48,7 @@ function checkRTO(startStr, endStr) {
   const now = new Date();
   Logger.log("Getting all events from %s to %s", start, end);
   const allEvents = calendar.getEvents(start, end);
-
-  /* Making a repeated getXYZ() calls in the helper methods is slow. Faster to get all data once here. */
-  const allEventData = allEvents.map(event => {
-    const title = event.getTitle();
-    const startTime = event.getStartTime();
-    const endTime = event.getEndTime();
-    const eventType = event.getEventType();
-    const isAllDayEvent = event.isAllDayEvent();
-    const isRecurringEvent = event.isRecurringEvent();
-
-    return {
-      title: title,
-      startTime: startTime,
-      endTime: endTime,
-      eventType: eventType,
-      isAllDayEvent: isAllDayEvent,
-      isRecurringEvent: isRecurringEvent
-    }
-  });
-
+  const allEventData = createEventProjection(allEvents);
   const inOfficeDays = getInOfficeDays(start, end, allEventData);
   Logger.log("Total in office from " + start.toDateString() + " to " + end.toDateString() + ": " + inOfficeDays.length);
 

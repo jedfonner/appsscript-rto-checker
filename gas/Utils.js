@@ -1,4 +1,31 @@
 /**
+ * Making a repeated event.getXYZ() calls in the helper methods is slow. Faster to get all data once here.
+ *
+ * @param {CalendarEvent[]} events
+ * @return {Object[]} array of objects with just the title, startTime, endTime, eventType, isAllDayEvent, and isRecurringEvent fields
+ */
+function createEventProjection(events) {
+  const projection = events.map(event => {
+    const title = event.getTitle();
+    const startTime = event.getStartTime();
+    const endTime = event.getEndTime();
+    const eventType = `${event.getEventType()}`;
+    const isAllDayEvent = event.isAllDayEvent();
+    const isRecurringEvent = event.isRecurringEvent();
+
+    return {
+      title: title,
+      startTime: startTime,
+      endTime: endTime,
+      eventType: eventType,
+      isAllDayEvent: isAllDayEvent,
+      isRecurringEvent: isRecurringEvent
+    }
+  });
+  return projection;
+}
+
+/**
  * Returns a date that is incremented by the specified number of weeks
  * @param {Date} dt the starting date
  * @param {int} number of weeks to add. Can be negative to decrement weeks
