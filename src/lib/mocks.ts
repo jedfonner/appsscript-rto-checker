@@ -87,48 +87,39 @@ const EXCLUSIONS: Record<string, string[]> = {
   ]
 }
 
+function getRandomDates(start: Date, end: Date) {
+  const arr = [];
+  while (start < end) {
+    //Mon-Fri only
+    if (start.getDay() >= 1 && start.getDay() <= 5 && Math.random() <= 0.5) {
+      const year = start.getFullYear();
+      const month = `${start.getMonth() + 1}`.padStart(2, '0');
+      const day = start.getDate();
+      arr.push(`${year}-${month}-${day}`);
+    }
+    start.setDate(start.getDate() + 1);
+  }
+  return arr;
+}
 // Add your server functions here
 export const mocks: ServerFunctions = {
   getHolidaysAndExclusions: (country, startStr, endStr) => {
-    const result = (EXCLUSIONS[country] || []).filter(dateStr => dateStr >= startStr && dateStr <= endStr);
+    const result = (EXCLUSIONS[country] || []).filter(
+      dateStr => dateStr >= startStr && dateStr <= endStr
+    );
     // console.log('[MOCK] Server function getHolidaysAndExclusions completed:', result);
     return result;
   },
   checkRTO(startStr, endStr) {
     const result = {
       inOfficeDays: [
-        '2025-10-20',
-        '2025-10-21',
-        '2025-10-23',
-        '2025-10-27',
-        '2025-10-28',
-        '2025-10-30',
-        '2025-11-03',
-        '2025-11-04',
-        '2025-11-06',
-        '2025-11-12',
-        '2025-11-13',
-        '2025-11-18',
-        '2025-12-01',
-        '2025-12-02',
-        '2025-12-04',
-        '2025-12-08',
-        '2025-12-09',
-        '2025-12-11',
-        '2025-12-16',
-        '2026-01-06',
-        '2026-01-08',
-        '2026-01-12',
-        '2026-01-13',
-        '2026-01-15',
-        '2026-01-20',
-        '2026-01-22',
-        '2026-01-29', // this overlaps with an exclusion but should be counted anyway
-        '2026-01-30',
-        '2026-02-02'].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
-    } // Mocked RTO dates
+        '2026-04-23',
+        '2026-04-27',
+        ...getRandomDates(new Date('2026-04-28'), new Date())
+      ].filter(dateStr => dateStr >= startStr && dateStr <= endStr)
+    }; // Mocked RTO dates
     // console.log('[MOCK] Server function checkRTO completed:', result);
     return result;
   }
   // You can add more mock server functions here as needed
-}
+};

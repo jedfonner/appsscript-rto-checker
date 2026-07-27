@@ -39,19 +39,22 @@ Uses string params not dates because "Requests fail if you attempt to pass a Dat
 from the docs: https://developers.google.com/apps-script/guides/html/reference/run#myFunction(...)
 */
 function checkRTO(startStr, endStr) {
-  Logger.log("Checking RTO from %s to %s", startStr, endStr);
-  const start = new Date(startStr);
-  const end = new Date(endStr); end.setDate(end.getDate() + 1); // increment by 1 to be inclusive
+  Logger.log('Checking RTO from %s to %s', startStr, endStr);
+  // Splits strings into pieces to create dates in GMT, otherwise timezones create problems
+  const [startYear, startMonth, startDay] = startStr.split('-');
+  const start = new Date(startYear, parseInt(startMonth) - 1, startDay); // subtract 1 from month due to 0-based indexing
+  const [endYear, endMonth, endDay] = endStr.split('-');
+  const end = new Date(endYear, parseInt(endMonth) - 1, parseInt(endDay) + 1); // increment day by 1 to be inclusive
   const calendarIdToUse = Session.getActiveUser().getEmail();
   const calendar = CalendarApp.getCalendarById(calendarIdToUse);
-
   const now = new Date();
-  Logger.log("Getting all events from %s to %s", start, end);
+  Logger.log('Getting all events from %s to %s', start, end);
   const allEvents = calendar.getEvents(start, end);
   const allEventData = createEventProjection(allEvents);
   const inOfficeDays = getInOfficeDays(start, end, allEventData);
-  Logger.log("Total in office from " + start.toDateString() + " to " + end.toDateString() + ": " + inOfficeDays.length);
-
+  Logger.log(
+    'Total in office from ' + start.toDateString() + ' to ' + end.toDateString() + ': ' + inOfficeDays.length
+  );
   // Return strings not Dates because DAte objects break GAS HTMLService communication
   return {
     inOfficeDays: inOfficeDays.map(date => date.toISOString().slice(0, 10)),
