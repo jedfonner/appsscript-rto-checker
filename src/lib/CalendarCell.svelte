@@ -48,7 +48,6 @@
     border-radius: 0.25rem;
     font-size: 1.25rem;
     padding: 0.25em;
-    cursor: pointer;
   }
   .calendar-cell.in-office {
     background-color: var(--accent-color);
@@ -64,12 +63,14 @@
   .calendar-cell.excluded:after {
     content: '';
     position: absolute;
-    width: 100%;
-    height: 2px;
-    background-color: var(--foreground-color);
-    left: 0;
-    top: 50%;
-    transform: rotate(-25deg);
+    inset: 0;
+    background-image: linear-gradient(
+      to top right,
+      transparent calc(50% - 1px),
+      var(--foreground-color) calc(50% - 1px),
+      var(--foreground-color) calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
   }
   .calendar-cell.out-of-range {
     opacity: 0.4;
