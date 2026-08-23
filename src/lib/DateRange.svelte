@@ -66,6 +66,10 @@
     font-size: var(--font-size);
     padding: 0 0.25rem;
     color: var(--foreground-color);
+    cursor: text;
+  }
+  .picker input[type='date']::-webkit-calendar-picker-indicator {
+    cursor: pointer;
   }
   .divider {
     font-size: 2rem;

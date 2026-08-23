@@ -90,3 +90,7 @@ button {
   border: 1px solid var(--foreground-color);
   border-radius: 0.25rem;
 }
+
+select, button {
+  cursor: pointer;
+}
